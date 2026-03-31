@@ -1,0 +1,12 @@
+# Pastas pesadas de dependências
+backend/venv/
+backend/__pycache__/
+frontend/node_modules/
+frontend/dist/
+
+# Arquivos de sistema operacional
+.DS_Store
+Thumbs.db
+
+# Arquivos de variáveis de ambiente (segurança)
+.env
