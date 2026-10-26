@@ -1,79 +1,111 @@
-import { useState } from 'react'
+import { useState, type ChangeEvent } from 'react'
+
+type ResumeData = {
+  nome: string | null
+  email: string | null
+  telefone: string | null
+  profissao: string | null
+}
 
 function App() {
   const [file, setFile] = useState<File | null>(null)
-  const [result, setResult] = useState<string>('')
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [resume, setResume] = useState<ResumeData | null>(null)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  // Handler para seleção de arquivo
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files.length > 0) {
-      setFile(event.target.files[0])
-    }
+  function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
+    const selectedFile = event.target.files?.[0] ?? null
+
+    setFile(selectedFile)
+    setResume(null)
+    setError('')
   }
 
-  // Handler para upload e processamento
-  const handleUpload = async () => {
+  async function handleUpload() {
     if (!file) {
-      alert("Por favor, selecione um PDF primeiro!")
+      setError('Selecione um arquivo PDF para continuar.')
       return
     }
 
-    setIsLoading(true)
-    setResult('')
+    if (file.type !== 'application/pdf' &&
+        !file.name.toLowerCase().endsWith('.pdf')) {
+      setError('O arquivo precisa estar no formato PDF.')
+      return
+    }
 
     const formData = new FormData()
-    formData.append("file", file)
+    formData.append('file', file)
+
+    setLoading(true)
+    setError('')
+    setResume(null)
 
     try {
-      // Fazer a requisição para o back-end
-      const response = await fetch("http://localhost:8000/upload", {
-        method: "POST",
-        body: formData,
+      const response = await fetch('http://localhost:8000/upload', {
+        method: 'POST',
+        body: formData
       })
 
       const data = await response.json()
 
-      if (data.status === "success") {
-        // Limpar o texto retornado da formatação da IA
-        const cleanText = data.extracted_data.replace(/```json/gi, '').replace(/```/g, '').trim();
-        setResult(cleanText);
-      } else {
-        setResult("Erro na API: " + data.detail)
+      if (!response.ok) {
+        throw new Error(data.detail || 'Não foi possível processar o arquivo.')
       }
 
-    } catch (error) {
-      setResult("Erro ao conectar com o servidor. O back-end está ligado?")
+      setResume(data.extracted_data)
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Ocorreu erro inesperado.'
+      )
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
   }
 
   return (
-    <div style={{ padding: '40px', fontFamily: 'sans-serif', maxWidth: '600px', margin: '0 auto' }}>
+    <div style={{
+      maxWidth: 600,
+      margin: '40px auto',
+      padding: 20,
+      fontFamily: 'Arial, sans-serif'
+    }}>
       <h1>Leitor de Currículos com IA</h1>
-      <p>Faça o upload de um PDF para extrair os dados principais.</p>
+      <p>Selecione um currículo em PDF para extrair as informações principais.</p>
 
-      <div style={{ marginBottom: '20px' }}>
-        <input
-          type="file"
-          accept="application/pdf"
-          onChange={handleFileChange}
-        />
+      <input
+        type="file"
+        accept=".pdf,application/pdf"
+        onChange={handleFileChange}
+      />
+
+      <div style={{ marginTop: 20 }}>
+        <button
+          onClick={handleUpload}
+          disabled={loading}
+          style={{ padding: '10px 20px', cursor: loading ? 'wait' : 'pointer' }}
+        >
+          {loading ? 'Processando...' : 'Extrair dados'}
+        </button>
       </div>
 
-      <button
-        onClick={handleUpload}
-        disabled={isLoading}
-        style={{ padding: '10px 20px', cursor: isLoading ? 'not-allowed' : 'pointer' }}
-      >
-        {isLoading ? 'Processando com IA...' : 'Extrair Dados'}
-      </button>
+      {error && (
+        <p role="alert" style={{ color: '#c62828', marginTop: 20 }}>
+          {error}
+        </p>
+      )}
 
-      {result && (
-        <div style={{ marginTop: '30px', padding: '20px', backgroundColor: '#1e1e1e', color: '#00ff00', borderRadius: '8px', overflowX: 'auto' }}>
-          <h3>Dados Extraídos:</h3>
-          <pre>{result}</pre>
+      {resume && (
+        <div style={{
+          marginTop: 30,
+          padding: 20,
+          backgroundColor: '#f4f4f4',
+          borderRadius: 6
+        }}>
+          <h2>Dados extraídos</h2>
+          <p><strong>Nome:</strong> {resume.nome || 'Não identificado'}</p>
+          <p><strong>E-mail:</strong> {resume.email || 'Não identificado'}</p>
+          <p><strong>Telefone:</strong> {resume.telefone || 'Não identificado'}</p>
+          <p><strong>Profissão:</strong> {resume.profissao || 'Não identificada'}</p>
         </div>
       )}
     </div>

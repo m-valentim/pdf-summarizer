@@ -1,12 +1,54 @@
-# Pastas de dependências
-backend/venv/
-backend/__pycache__/
-frontend/node_modules/
-frontend/dist/
+# Configurações locais
+.env
+.env.*
+*.pem
+*.key
 
-# Arquivos de sistema operacional
+# Ambientes virtuais
+venv/
+.venv/
+env/
+ENV/
+
+# Cache, bytecode e ferramentas
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+*.egg-info/
+
+# Dependências e arquivos gerados pelo frontend
+node_modules/
+dist/
+dist-ssr/
+.vite/
+coverage/
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Arquivos locais
+.vscode/
+.idea/
 .DS_Store
 Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*.suo
 
-# Arquivos de variáveis de ambiente
-.env
+# Arquivos temporários
+*.tmp
+*.temp

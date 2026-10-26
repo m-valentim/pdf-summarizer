@@ -1,66 +1,107 @@
-# 📄 Leitor de Currículos com IA
+# Leitor de Currículos com IA
 
-Uma Prova de Conceito (PoC) Full Stack desenvolvida para automatizar a leitura e extração de dados estruturados de documentos PDF utilizando Inteligência Artificial.
+Aplicação web para extração de informações de currículos em PDF utilizando o Gemini 2.5 Flash. O usuário envia um arquivo e o sistema identifica nome, e-mail, telefone e profissão, retornando os dados de forma estruturada.
 
-## 🎯 Objetivo do Projeto
-Demonstrar a integração de um front-end em React com uma API em Python, capaz de receber arquivos PDF, processá-los e utilizar agentes de LLM para retornar informações em formato JSON. 
+O front-end foi desenvolvido em React com TypeScript, enquanto o back-end utiliza FastAPI para receber os arquivos, extrair o texto dos PDFs e realizar as requisições ao Gemini.
 
-<img src="./preview.png" alt="Demonstração do Leitor de Currículos" width="800">
+![Interface da aplicação](./preview.png)
 
-## 💻 Tecnologias Utilizadas
+## Tecnologias
 
-**Front-end:**
-* **React.js** com **TypeScript**.
-* **Vite**.
+- **React + TypeScript** — Interface da aplicação
+- **Vite** — Ambiente de desenvolvimento do front-end
+- **Python + FastAPI** — API para processamento dos arquivos
+- **PyPDF2** — Extração de texto dos PDFs
+- **Gemini 2.5 Flash** — Identificação das informações dos currículos
 
-**Back-end:**
-* **Python** com **FastAPI**.
-* **PyPDF2** (Manipulação e extração de texto).
-* **Google Generative AI (Gemini 2.5 Flash)** (Processamento de linguagem natural e extração de dados).
-
-## ⚙️ Arquitetura e Fluxo de Dados
-1. O usuário faz o upload de um currículo/documento via interface React.
-2. O Front-end empacota o arquivo usando `FormData` e envia via requisição `POST` para a API.
-3. O FastAPI recebe o arquivo e utiliza o `PyPDF2` para extrair o conteúdo textual de todas as páginas.
-4. O texto bruto é enviado via prompt estruturado para a API do Gemini, instruindo a extração de informações específicas (Nome, Email, Telefone, Profissão).
-5. A IA retorna um JSON estruturado, que é devolvido pela API e renderizado dinamicamente na tela do usuário.
-
-## 🚀 Como Executar o Projeto Localmente
+## Instalação e execução
 
 ### Pré-requisitos
-* Node.js instalado.
-* Python 3.8+ instalado.
-* Uma chave de API válida do Google AI Studio.
 
-### 1. Configurando o Back-end (API)
-Navegue até a pasta do back-end, crie seu ambiente virtual e instale as dependências:
-```bash
-cd backend
-python -m venv venv
-venv\Scripts\activate # Se for para Windows. Em caso de Linux/Mac: source venv/bin/activate
-pip install fastapi uvicorn pypdf2 python-multipart google-generativeai
-```
-Obs: Lembre-se de inserir sua API Key no arquivo main.py em API_KEY = "YOUR_GOOGLE_API_KEY". Obtenha a API Key em [Google AI Studio](https://aistudio.google.com/).
+- Python 3.10 ou superior
+- Node.js e npm
+- Chave de API do Gemini ([Google AI Studio](https://aistudio.google.com/))
 
-Inicie o servidor local:
+### Back-end
+
+Clone o repositório e acesse a pasta do back-end:
 
 ```bash
-uvicorn main:app --reload
+git clone https://github.com/SEU-USUARIO/pdf-summarizer.git
+cd pdf-summarizer/backend
 ```
 
-A API estará rodando em http://localhost:8000.
+Crie e ative um ambiente virtual.
 
-### 2. Configurando o Front-end (React)
-Em um novo terminal, navegue até a pasta do front-end e instale as dependências:
+Windows (PowerShell):
+
+```powershell
+py -m venv venv
+.\venv\Scripts\Activate.ps1
+```
+
+Linux/macOS:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+Instale as dependências:
+
+```bash
+pip install -r requirements.txt
+```
+
+Crie um arquivo `.env` na pasta `backend` e configure a chave do Gemini:
+
+```env
+GEMINI_API_KEY=sua_chave_aqui
+```
+
+Inicie o servidor:
+
+```bash
+python -m uvicorn main:app --reload
+```
+
+A API ficará disponível em `http://localhost:8000`, com a documentação dos endpoints em `http://localhost:8000/docs`.
+
+### Front-end
+
+Em outro terminal, acesse a pasta `frontend`:
 
 ```bash
 cd frontend
-npm install
-```
-
-Inicie o servidor de desenvolvimento:
-```bash
+npm ci
 npm run dev
 ```
 
-Acesse a aplicação no seu navegador através do link gerado (geralmente http://localhost:5173).
+Acesse `http://localhost:5173` para utilizar a aplicação.
+
+## Funcionamento
+
+Após o envio do currículo, a API extrai o texto do PDF usando PyPDF2 e encaminha o conteúdo ao Gemini. O modelo identifica os campos solicitados e retorna um JSON, que é utilizado pelo front-end para apresentar as informações.
+
+Exemplo de resposta do endpoint `POST /upload`:
+
+```json
+{
+  "status": "success",
+  "file_name": "curriculo.pdf",
+  "extracted_data": {
+    "nome": "João Silva",
+    "email": "joao@email.com",
+    "telefone": "(11) 99999-9999",
+    "profissao": "Desenvolvedor de Software"
+  }
+}
+```
+
+Os campos não identificados são retornados como `null`.
+
+## Limitações
+
+A extração de texto depende do conteúdo do PDF. Currículos digitalizados como imagem podem não funcionar corretamente, pois o projeto não implementa OCR.
+
+O processamento também depende da disponibilidade da API do Gemini, e as informações retornadas pelo modelo podem conter imprecisões.
